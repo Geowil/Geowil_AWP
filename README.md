@@ -171,7 +171,7 @@ LvlTraitIds:#-n - This attribute defines the trait within the trait category def
 
 Consider this example:
 ```
-LevelTraitIds:0,4,0,0,7-10
+LvlTraitIds:0,4,0,0,7-10
 ```
 
 In the above example we are adding the Poison state at WLV 2 and the Rage and Sleep states at WLV 5.  The effective hit rate for these state traits will be defined next. LvlTraitVals:#-n - This attribute defines the rates at which any trait will be applied.  Note that these should always be a decimal value between -1.0 and 1.0 unless you intend a more than 100% increase or decrease.  Some specific trait types may use the actual values or a 0 or 1 flag.  These specific cases will be outlined in the Trait Sheet I will be developing.
@@ -207,7 +207,7 @@ EParam:0:10,0,10,0,25
 EParam:6:2,6,4,1,4
 SParam:7:10,0,0,15,20
 LvlTraitCodes:0,13,0,13,13-13-13
-LevelTraitIds:0,4,0,5,5-7-10
+LvlTraitIds:0,4,0,5,5-7-10
 LvlTraitVals:0,0.04,0,0.25,0.10-0.15-0.43
 DurInc:5,2,7,6,14
 RefBonusRate:0.15
