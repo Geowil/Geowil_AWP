@@ -1,7 +1,7 @@
 # Geowil_AWP Plugin
 Version: 1.0.0
 
-Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_V1.0.0.zip)
+Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_V1.0.0_Demo.zip)
 
 Project Available: Yes, [Geowil_AWP_Project.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_ProjectV1.0.0.zip)
 
