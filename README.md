@@ -1,9 +1,9 @@
 # Geowil_Bank Plugin
 Version: 1.0.1
 
-Demo Available: Yes, [Geowil_BankDemo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_V1.0.0.zip)
+Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_V1.0.0.zip)
 
-Project Available: Yes, [Geowil_BankProject.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_ProjectV1.0.0.zip)
+Project Available: Yes, [Geowil_AWP_Project.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_ProjectV1.0.0.zip)
 
 Conflicts: Maybe, see [Conflicts](https://github.com/Geowil/Geowil_AWP#conflicts) section
 
