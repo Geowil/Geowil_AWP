@@ -10,7 +10,7 @@ Conflicts: Maybe, see [Conflicts](https://github.com/Geowil/Geowil_AWP#conflicts
 Terms of Use: Free non-commercially or commercially; just give credit
 
 <p align="center"> 
-    <img src="http://s15.photobucket.com/user/Geowil/media/awpDemo1_zpswmpljojh.png.html"/>
+    <img src="http://s15.photobucket.com/user/Geowil/media/awpDemo1_zpswmpljojh.png"/>
 </p>
 
 
