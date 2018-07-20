@@ -1,5 +1,5 @@
-# Geowil_Bank Plugin
-Version: 1.0.1
+# Geowil_AWP Plugin
+Version: 1.0.0
 
 Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_V1.0.0.zip)
 
@@ -10,7 +10,7 @@ Conflicts: Maybe, see [Conflicts](https://github.com/Geowil/Geowil_AWP#conflicts
 Terms of Use: Free non-commercially or commercially; just give credit
 
 <p align="center"> 
-    <img src=""/>
+    <img src="http://s15.photobucket.com/user/Geowil/media/awpDemo1_zpswmpljojh.png.html"/>
 </p>
 
 
