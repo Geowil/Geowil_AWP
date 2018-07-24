@@ -1,5 +1,5 @@
 # Geowil_AWP Plugin
-Version: 1.0.0
+Version: 1.0.1
 
 Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_V1.0.0_Demo.zip)
 
@@ -266,5 +266,22 @@ Anything that aliases or overrides any of the following functions will likely co
  
  
 ## Version Changelog
+- Version 1.0.1 Changelog:
+  - Fixed an issue which was causing the "Level Weapon" help text to not display and then updated all of the help text in the Blacksmith action window.
+
+  - Fixed an issue that would cause the game to crash when attacking without a weapon.
+
+  - Fixed several problems with the note tags in the demo which were causing things to not be applied when leveling up (Ex: Excalibur's traits) and breaking some plugin functionality.
+
+  - Increased the amount of gold that the static monster in Mt. Blood gives to you from 150K to 1.5M and it won't show level up information any more.
+
+  - Fixed several incorrect note tag attribute names in the "windbag" npc and the plugin help text.
+
+  - Fixed an issue where saving with a character who did not have a weapon equipped caused the game to crash.
+
+  - Fixed a problem which caused some stats to show a -- if the stat was already negative.
+
+  - Found an issue where some stats which may be processed as floats or where the stat is increased by less than 1 won't show properly in the stat list in the Blacksmith status window.  Working on a fix for this for the next update.
+  
 - Version 1.0.0 Changelog:
   - Initial version of plugin uploaded?
