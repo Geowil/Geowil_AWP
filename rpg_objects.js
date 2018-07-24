@@ -28,45 +28,47 @@ Game_InstanceWeaponHandler.prototype.createSaveContents = function(){
     for (var aID in $gameActors._data){
         if (aID != 0){
             var actor = $gameActors._data[aID];
-            this._actorWeapons[wpID] = {};
+            if (actor._equips[0]){
+                this._actorWeapons[wpID] = {};
 
-            var baseParams = this.genParams(actor._equips[0]._baseParams);
-            var addParams = this.genParams(actor._equips[0]._addParams);
-            var exParams = this.genParams(actor._equips[0]._exParams);
-            var spParams = this.genParams(actor._equips[0]._spParams);
-            var finalParams = this.genParams(actor._equips[0]._finalParams);
-            var traits = this.genTraits(actor._equips[0]._traits);
-            var lvlBonuses = this.genLvBonuses(actor._equips[0]._lvlBonuses);
+                var baseParams = this.genParams(actor._equips[0]._baseParams);
+                var addParams = this.genParams(actor._equips[0]._addParams);
+                var exParams = this.genParams(actor._equips[0]._exParams);
+                var spParams = this.genParams(actor._equips[0]._spParams);
+                var finalParams = this.genParams(actor._equips[0]._finalParams);
+                var traits = this.genTraits(actor._equips[0]._traits);
+                var lvlBonuses = this.genLvBonuses(actor._equips[0]._lvlBonuses);
 
-            this._actorWeapons[wpID]['id'] = actor._equips[0]._id;
-            this._actorWeapons[wpID]['name'] = actor._equips[0]._name;
-            this._actorWeapons[wpID]['description'] = actor._equips[0]._description;
-            this._actorWeapons[wpID]['baseParams'] = baseParams;
-            this._actorWeapons[wpID]['addParams'] = addParams;
-            this._actorWeapons[wpID]['finalParams'] = finalParams
-            this._actorWeapons[wpID]['spParams'] = spParams;
-            this._actorWeapons[wpID]['exParams'] = exParams;
-            this._actorWeapons[wpID]['iType'] = actor._equips[0]._iType;
-            this._actorWeapons[wpID]['wType'] = actor._equips[0]._wType;
-            this._actorWeapons[wpID]['slotId'] = 0;
-            this._actorWeapons[wpID]['icon'] = actor._equips[0]._icon;
-            this._actorWeapons[wpID]['traits'] = traits;
-            this._actorWeapons[wpID]['note'] = actor._equips[0]._note;
-            this._actorWeapons[wpID]['price'] = actor._equips[0]._price;
-            this._actorWeapons[wpID]['level'] = actor._equips[0]._level;
-            this._actorWeapons[wpID]['exp'] = actor._equips[0]._exp;
-            this._actorWeapons[wpID]['durability'] = actor._equips[0]._durability;
-            this._actorWeapons[wpID]["lvlBonuses"] = lvlBonuses;
-            this._actorWeapons[wpID]["maxLvl"] = actor._equips[0]._maxLvl;
-            this._actorWeapons[wpID]["maxDur"] = actor._equips[0]._maxDur;
-            this._actorWeapons[wpID]["expForm"] = actor._equips[0]._expForm;
-            this._actorWeapons[wpID]["goldForm"] = actor._equips[0]._goldForm;
-            this._actorWeapons[wpID]["refLvl"] = actor._equips[0]._refLevel;
-            this._actorWeapons[wpID]["refBonus"] = actor._equips[0]._refBonus;
-            this._actorWeapons[wpID]["isSynthed"] = actor._equips[0]._isSynthed;
-            this._actorWeapons[wpID]["durDmg"] = actor._equips[0]._durDmg;
-            this._actorWeapons[wpID]["actID"] = actor._actorId;
-            wpID += 1;
+                this._actorWeapons[wpID]['id'] = actor._equips[0]._id;
+                this._actorWeapons[wpID]['name'] = actor._equips[0]._name;
+                this._actorWeapons[wpID]['description'] = actor._equips[0]._description;
+                this._actorWeapons[wpID]['baseParams'] = baseParams;
+                this._actorWeapons[wpID]['addParams'] = addParams;
+                this._actorWeapons[wpID]['finalParams'] = finalParams
+                this._actorWeapons[wpID]['spParams'] = spParams;
+                this._actorWeapons[wpID]['exParams'] = exParams;
+                this._actorWeapons[wpID]['iType'] = actor._equips[0]._iType;
+                this._actorWeapons[wpID]['wType'] = actor._equips[0]._wType;
+                this._actorWeapons[wpID]['slotId'] = 0;
+                this._actorWeapons[wpID]['icon'] = actor._equips[0]._icon;
+                this._actorWeapons[wpID]['traits'] = traits;
+                this._actorWeapons[wpID]['note'] = actor._equips[0]._note;
+                this._actorWeapons[wpID]['price'] = actor._equips[0]._price;
+                this._actorWeapons[wpID]['level'] = actor._equips[0]._level;
+                this._actorWeapons[wpID]['exp'] = actor._equips[0]._exp;
+                this._actorWeapons[wpID]['durability'] = actor._equips[0]._durability;
+                this._actorWeapons[wpID]["lvlBonuses"] = lvlBonuses;
+                this._actorWeapons[wpID]["maxLvl"] = actor._equips[0]._maxLvl;
+                this._actorWeapons[wpID]["maxDur"] = actor._equips[0]._maxDur;
+                this._actorWeapons[wpID]["expForm"] = actor._equips[0]._expForm;
+                this._actorWeapons[wpID]["goldForm"] = actor._equips[0]._goldForm;
+                this._actorWeapons[wpID]["refLvl"] = actor._equips[0]._refLevel;
+                this._actorWeapons[wpID]["refBonus"] = actor._equips[0]._refBonus;
+                this._actorWeapons[wpID]["isSynthed"] = actor._equips[0]._isSynthed;
+                this._actorWeapons[wpID]["durDmg"] = actor._equips[0]._durDmg;
+                this._actorWeapons[wpID]["actID"] = actor._actorId;
+                wpID += 1;
+            }
         }
     }
 
