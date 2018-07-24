@@ -403,7 +403,7 @@
 *      see the full structure:
 *
 *  <AWP>
-*  MaxLevel:5
+*  MaxLvl:5
 *  DefDur:10
 *  DurDmg: 0.02
 *  ExpForm:175 * Math.pow(wepLevel+1, 1.25)
@@ -415,7 +415,7 @@
 *  EParam:6:2,6,4,1,4
 *  SParam:7:10,0,0,15,20
 *  LvlTraitCodes:0,13,0,13,13-13-13
-*  LevelTraitIds:0,4,0,5,5-7-10
+*  LvlTraitIds:0,4,0,5,5-7-10
 *  LvlTraitVals:0,0.04,0,0.25,0.10-0.15-0.43
 *  DurInc:5,2,7,6,14
 *  RefBonusRate:0.15
@@ -425,6 +425,13 @@
 *
 *
 * Change Log:
+*     1.0.1 - 
+        -Fixed incorrectly docuented note tag attribute names.  Fixed
+            an issue in the Blacksmith option selection window which was
+            causing the help text to display incorrectly.  Also changed
+            the wording of that window's help text.
+        -Fixed an issue when entering battle with a character that has
+            no weapon equipped which was causing the game to crash.
 *     1.0.0 - Initial version released
 *
 *
@@ -711,7 +718,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 	Game_Actor.prototype.performAttack = function() {
 	    var weapons = this.weapons();
-	    var wtypeId = this._equips[0]._wType;
+	    var wtypeId = this._equips[0] ? this._equips[0]._wType : 0;
 	    var attackMotion = $dataSystem.attackMotions[wtypeId];
 	    if (attackMotion) {
 	        if (attackMotion.type === 0) {
@@ -867,8 +874,10 @@ var $instWeapons      = null; //For Geowil_AWP
 
 	            if (bIsRepairSysActive){
 	            	if (this.subject().constructor == Game_Actor){
-	            		if (this.subject()._equips[0]._durability == 0){
-	            			value = Math.round(value * 0.25);
+	            		if (this.subject()._equips[0]){
+	            			if (this.subject()._equips[0]._durability == 0){
+	            				value = Math.round(value * 0.25);
+	            			}
 	            		}
 	            	}
 	            }
@@ -877,21 +886,23 @@ var $instWeapons      = null; //For Geowil_AWP
 
 	            if (bIsRepairSysActive){
 		            if (this.subject().constructor == Game_Actor){
-			            //Figure out if bare attacking causes issue
-				        var durDamage = this.subject()._equips[0]._maxDur * this.subject()._equips[0]._durDmg;
-				        var dur = this.subject()._equips[0]._durability;
+		            	if (this.subject()._equips[0]){
+				            //Figure out if bare attacking causes issue - it does
+					        var durDamage = this.subject()._equips[0]._maxDur * this.subject()._equips[0]._durDmg;
+					        var dur = this.subject()._equips[0]._durability;
 
-				        if (durDamage < 1 && durDamage > 0){
-				        	durDamage = 1;
-				        } else{
-				        	durDamage = Math.round(durDamage);
-				        }
+					        if (durDamage < 1 && durDamage > 0){
+					        	durDamage = 1;
+					        } else{
+					        	durDamage = Math.round(durDamage);
+					        }
 
-				        if (dur - durDamage > 0){
-				        	this.subject()._equips[0]._durability -= durDamage;
-				        } else{
-				        	this.subject()._equips[0]._durability = 0;
-				        }
+					        if (dur - durDamage > 0){
+					        	this.subject()._equips[0]._durability -= durDamage;
+					        } else{
+					        	this.subject()._equips[0]._durability = 0;
+					        }
+					    }
 				    }
 			    }
 	        }
@@ -1935,37 +1946,37 @@ var $instWeapons      = null; //For Geowil_AWP
 			}
 
 			//Base Params
-			var wAtk = "Atk:" + this.setSign(this._wep.atk, false) + ~~this._wep.atk;
-			var wDef = "Def:" + this.setSign(this._wep.def, false) + ~~this._wep.def;
-			var wMat = "Mat:" + this.setSign(this._wep.mat, false) + ~~this._wep.mat;
-			var wMdf = "Mdf:" + this.setSign(this._wep.mdf, false) + ~~this._wep.mdf;
-    		var wAgi = "Agi:" + this.setSign(this._wep.agi, false) + ~~this._wep.agi;
-    		var wLuk = "Luk:" + this.setSign(this._wep.luk, false) + ~~this._wep.luk;
-    		var wHit = "Hit:" + this.setSign(this._wep.hit, false) + ~~this._wep.hit;
-    		var wEva = "Eva:" + this.setSign(this._wep.eva, false) + ~~this._wep.eva;
-    		var wCri = "Cri:" + this.setSign(this._wep.cri, false) + ~~this._wep.cri;
-    		var wHrg = "Hrg:" + this.setSign(this._wep.hrg, false) + ~~this._wep.hrg;
-    		var wMrg = "Mrg:" + this.setSign(this._wep.mrg, false) + ~~this._wep.mrg;
-    		var wTrg = "Trg:" + this.setSign(this._wep.trg, false) + ~~this._wep.trg;
+			var wAtk = "Atk:" + ~~this._wep.atk;
+			var wDef = "Def:" + ~~this._wep.def;
+			var wMat = "Mat:" + ~~this._wep.mat;
+			var wMdf = "Mdf:" + ~~this._wep.mdf;
+    		var wAgi = "Agi:" + ~~this._wep.agi;
+    		var wLuk = "Luk:" + ~~this._wep.luk;
+    		var wHit = "Hit:" + ~~this._wep.hit;
+    		var wEva = "Eva:" + ~~this._wep.eva;
+    		var wCri = "Cri:" + ~~this._wep.cri;
+    		var wHrg = "Hrg:" + ~~this._wep.hrg;
+    		var wMrg = "Mrg:" + ~~this._wep.mrg;
+    		var wTrg = "Trg:" + ~~this._wep.trg;
 
     		if (bAreExtParmsEnabled){
 	    		//Extended Params
-			    var wMhp = "Mhp:" + this.setSign(this._wep.mhp, false) + ~~this._wep.mhp;
-			    var wMmp = "Mmp:" + this.setSign(this._wep.mmp, false) + ~~this._wep.mmp;
-			    var wCev = "Cev:" + this.setSign(this._wep.cev, false) + ~~this._wep.cev;
-			    var wMev = "Mev:" + this.setSign(this._wep.mev, false) + ~~this._wep.mev;
-			    var wCnt = "Cnt:" + this.setSign(this._wep.cnt, false) + ~~this._wep.cnt;
-			    var wMfr = "Mfr:" + this.setSign(this._wep.mrf, false) + ~~this._wep.mrf;
-			    var wTgr = "Tgr:" + this.setSign(this._wep.tgr, false) + ~~this._wep.tgr;
-			    var wGrd = "Grd:" + this.setSign(this._wep.grd, false) + ~~this._wep.grd;
-			    var wRec = "Rec:" + this.setSign(this._wep.rec, false) + ~~this._wep.rec;
-			    var wPha = "Pha:" + this.setSign(this._wep.pha, false) + ~~this._wep.pha;
-			    var wMcr = "Mcr:" + this.setSign(this._wep.mcr, false) + ~~this._wep.mcr;
-			    var wTcr = "Tcr:" + this.setSign(this._wep.tcr, false) + ~~this._wep.tcr;
-			    var wPdr = "Pdr:" + this.setSign(this._wep.pdr, false) + ~~this._wep.pdr;
-			    var wMdr = "Mdr:" + this.setSign(this._wep.mdr, false) + ~~this._wep.mdr;
-			    var wFdr = "Fdr:" + this.setSign(this._wep.fdr, false) + ~~this._wep.fdr;
-			    var wExr = "Exr:" + this.setSign(this._wep.exr, false) + ~~this._wep.exr;
+			    var wMhp = "Mhp:" + ~~this._wep.mhp;
+			    var wMmp = "Mmp:" + ~~this._wep.mmp;
+			    var wCev = "Cev:" + ~~this._wep.cev;
+			    var wMev = "Mev:" + ~~this._wep.mev;
+			    var wCnt = "Cnt:" + ~~this._wep.cnt;
+			    var wMfr = "Mfr:" + ~~this._wep.mrf;
+			    var wTgr = "Tgr:" + ~~this._wep.tgr;
+			    var wGrd = "Grd:" + ~~this._wep.grd;
+			    var wRec = "Rec:" + ~~this._wep.rec;
+			    var wPha = "Pha:" + ~~this._wep.pha;
+			    var wMcr = "Mcr:" + ~~this._wep.mcr;
+			    var wTcr = "Tcr:" + ~~this._wep.tcr;
+			    var wPdr = "Pdr:" + ~~this._wep.pdr;
+			    var wMdr = "Mdr:" + ~~this._wep.mdr;
+			    var wFdr = "Fdr:" + ~~this._wep.fdr;
+			    var wExr = "Exr:" + ~~this._wep.exr;
 			}
 
 			this.drawIcon(this._wep._icon,x-1,y);
@@ -3123,20 +3134,21 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._helpTxtList = [];
 
 		this._comList = ["Level Up"];
+		this._helpTxtList = ["Level up a weapon"]
 
 		if (bIsRefineSysActive){
 			this._comList.push("Refine");
-			this._helpTxtList.push("Refine your weapon");
+			this._helpTxtList.push("Refine a weapon");
 		}
 
 		if (bIsSynthSysActive){
 			this._comList.push("Synthesize");
-			this._helpTxtList.push("Synthesize your weapon");
+			this._helpTxtList.push("Synthesize a weapon");
 		}
 
 		if (bIsRepairSysActive){
 			this._comList.push("Repair");
-			this._helpTxtList.push("Repair your weapon");
+			this._helpTxtList.push("Repair a weapon");
 		}
 
 		this._comList.push("Cancel");
