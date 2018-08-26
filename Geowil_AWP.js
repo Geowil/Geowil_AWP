@@ -36,6 +36,16 @@
 * @type boolean
 * @default true
 *
+* @param Enable Synth Level/Refine Requirements
+* @desc When enabled weapons will have to be their maximum level and must be at least the refine level defined in the note tag.
+* @type boolean
+* @default false
+*
+* @param Only Show Non-0 Stats
+* @desc When enabled causes the Blacksmith window to only show non-zero stats.
+* @type boolean
+* @default true
+*
 *
 * @help
 * This is a very complex plugin and therefore may have many conflicts with any
@@ -101,10 +111,12 @@
 *         Once a weapon has been synthesized its level is set to the maximum
 *         level of the weapon and the refine level is increased through a
 *         formula.  Each time you synthesize a weapon, it will become much
-*         harder to synthesize it again and much more costly.  Currently
-*         any weapon can be synthesized at any time give the above constraints
-*         but eventually only weapons that have been refined at least once and
-*         that are at their maximum level will be allowed to be synthesized.
+*         harder to synthesize it again and much more costly.  Depending on
+*         the Synth Ref Requirements parameter, any weapon can be synthesized
+*         at any time give the above constraints or only weapons that have
+*         been refined at at least the number of times specified in the 
+*         SynthRefReq note tag setting and that are at their maximum level
+*         will be allowed to be synthesized.
 *
 *
 *     Repair and Durability System:  The repair and durability system is another
@@ -156,6 +168,16 @@
 *
 *        Enable Extended Params - When on shows all 28 params in the BS stat
 *            window else shows only 12 of the most commonly used params.
+*      
+*        Enable Synth Level/Refine Requirements - When on this will enable
+*            the requirements to synthesize a weapon.  One of the reqs is
+*            that the weapon must be at its maximum level the second one
+*            is set through a note tag setting called SynthRefReq.  See
+*            the information for this note tag setting in the note tag
+*            section.
+*
+*        Only Show Non-0 Stats - When on this modified the BS stat window
+*            so that it only shows params which have a non-zero value.
 *
 *
 *    Plugin Commands:
@@ -177,6 +199,12 @@
 *            of the Blacksmith scene.  Note that on level up, refine, or
 *            synthesis these stats show up even when this setting is turned
 *            off or the Off plugin command has been called.
+*
+*        AWP SynthReqs On/Off - This plugin command allows you to enable or
+*            disable the requirements for synthesizing.
+*
+*        AWP OnlyNon0Params On/Off - This plugin allows you to enable or disable the
+*            only showing non-zero parameters feature.
 *
 *
 * Possible Conflicts:
@@ -266,6 +294,7 @@
 *           included if you make changes to ensure that your costs
 *           remain progressive.
 *
+*
 *       Param:#:#-n - this attribute is used to set parameter
 *           level bonuses.  Ensure that you have values for every
 *           level for your weapon or crashes may occur.  '#' is the
@@ -275,12 +304,13 @@
 *           This is followed by a comma-delimited list of how much
 *           that parameter should be increased per level where the
 *           position of that value in the list is the level the
-*           increase occurs on.  Example:
+*           increase occurs on.
 *
-*           Param:0:10,0,10,0,25
+*           Example:
+*           Param:0:0,10,10,0,25
 *
 *           This example shows a weapon with a max level of 5 which
-*           increases the maximum hp of the actor by 10 hp on WLV 1,
+*           increases the maximum hp of the actor by 10 hp on WLV 2,
 *           by 10 again on WLV 3, and then by an additional 25 on
 *           WLV 5.  Any actor with this weapon equipped while it is
 *           at Weapon Level 5 will get an additional 45 health.
@@ -296,12 +326,13 @@
 *           This is followed by a comma-delimited list of how much
 *           that parameter should be increased per level where the
 *           position of that value in the list is the level the
-*           increase occurs on.  Example:
+*           increase occurs on.
 *
-*           EParam:0:10,0,10,0,25
+*           Example:
+*           EParam:0:0,10,10,0,25
 *
 *           This example shows a weapon with a max level of 5 which
-*           increases the hit rate of the actor by 10 hp on WLV 1,
+*           increases the hit rate of the actor by 10 hit rate on WLV 2,
 *           by 10 again on WLV 3, and then by an additional 25 on
 *           WLV 5.  Any actor with this weapon equipped while it is
 *           at Weapon Level 5 will get an additional 45 hit rate.
@@ -317,15 +348,17 @@
 *           This is followed by a comma-delimited list of how much
 *           that parameter should be increased per level where the
 *           position of that value in the list is the level the
-*           increase occurs on.  Example:
-*
-*           SParam:0:10,0,10,0,25
+*           increase occurs on.  These values need to be floats!
+*           Please keep in mind that these are percentage values.
+*     
+*           Example:
+*           SParam:0:0.0,0.10,0.10,0.0,0.25
 *
 *           This example shows a weapon with a max level of 5 which
-*           increases the target rate of the actor by 10 hp on WLV 1,
-*           by 10 again on WLV 3, and then by an additional 25 on
+*           increases the target rate of the actor by 10% on WLV 2,
+*           by 10% again on WLV 3, and then by an additional 25% on
 *           WLV 5.  Any actor with this weapon equipped while it is
-*           at Weapon Level 5 will get an additional 45 target rate.
+*           at Weapon Level 5 will get an additional 45% target rate.
 *
 *
 *       LvlTraitCodes:#-n - This attribute is one of three which are
@@ -336,8 +369,9 @@
 *           up these level bonuses.
 *
 *           To define more than one trait at a level, separate each
-*           code with a -.  Here is an example:
+*           code with a -.
 *
+*           Here is an example:
 *           LvlTraitCodes:0,13,0,0,13-13
 *
 *           The above example uses our max level 5 weapon again.  It
@@ -355,8 +389,9 @@
 *           In many cases, these IDs will correspond to the values you
 *           see in the database for that particular trait object; ie
 *           the value next to a state in the State tab is the id you
-*           will place here for a type 13 trait.  Consider this example:
-*
+*           will place here for a type 13 trait.
+
+*           Consider this example:
 *           LevelTraitIds:0,4,0,0,7-10
 *
 *           In the above example we are adding the Poison state at WLV 2
@@ -372,7 +407,6 @@
 *           outlined in the Trait Sheet I will be developing.
 *
 *           Consider this example:
-*
 *           LvlTraitVals:0,0.04,0,0,0.15-0.43
 *
 *           The above example now sets the rates at which our traits are
@@ -387,8 +421,9 @@
 *
 *      DurInc:#-n - This attribute sets how much the durability of a weapon is
 *           increased at each level.  If you have the durability system enabled
-*           this is required.  Example:
-*
+*           this is required.
+
+*           Example:
 *           DurInc:5,2,7,6,14
 *
 *
@@ -397,6 +432,29 @@
 *           traits during refines, is used in determining refine costs, and
 *           other areas when the refine system is enabled, which means it is
 *           required if this system is enabled.
+*
+*
+*      ExpMulti:# - Yhis attribtue sets the rate at which battle exp is
+*           transferred to an actor's weapon.  This is a float out of
+*           100%.  Please keep this in mind.
+*
+*           Example:
+*           ExpMulti:0.72
+*
+*           The above example shows a value which will allow only 72% of
+*           the exp earned in battle from being added to the weapon.
+*
+*
+*      SynthRefReq:# - This attribute sets the minimum refine level to
+*           allow a weapon to be synthesized.  This is requried when
+*           the Enable Synthe Level/Ref Requirements plugin parameter
+*           is turned on.
+*
+*           Example:
+*           SynthRefReq:4
+*
+*           The above example indicates that the weapon must have be
+*           refined 4 times before it can be synthesized.
 *
 *
 *      Below is an example tag using the examples from above so that you can
@@ -408,30 +466,139 @@
 *  DurDmg: 0.02
 *  ExpForm:175 * Math.pow(wepLevel+1, 1.25)
 *  GoldForm:(((175+(1.25*(2*(wepLevel+1+65))))*Math.pow(wepLevel+1,1.25)))
-*  Param:0:10,0,10,0,25
-*  Param:2:5,2,2,1,10
-*  Param:7:1,2,1,0,5
-*  EParam:0:10,0,10,0,25
-*  EParam:6:2,6,4,1,4
-*  SParam:7:10,0,0,15,20
+*  Param:0:0,10,10,0,25
+*  Param:2:0,5,2,1,10
+*  Param:7:0,1,1,0,5
+*  EParam:0:0,10,10,0,25
+*  EParam:6:0,2,4,1,4
+*  SParam:7:0.0,0.10,0.0,0.15,0.20
 *  LvlTraitCodes:0,13,0,13,13-13-13
 *  LvlTraitIds:0,4,0,5,5-7-10
 *  LvlTraitVals:0,0.04,0,0.25,0.10-0.15-0.43
 *  DurInc:5,2,7,6,14
 *  RefBonusRate:0.15
+*  ExpMulti:0.85
+*  SynthRefReq:2
 *  </AWP>
 *
 *
 *
-*
 * Change Log:
+*     1.3.5 - 
+*        -Fixed several bugs related to a negative select index.
+*
+*        -Fixed the -- stat sign but removing the code that was
+*            adding the - stat sign.  It was not needed.
+*
+*        -Fixed a bug that would sometimes cause five stats to be
+*            drawn on one line in the BS status window.
+*
+*        -Fixed a bug that was causing sparams to be processed
+*            incorrectly into integers instead of floats.  This
+*            WILL invalidate previous save games.
+*
+*        -Fixed a bug that was causing weapons to be saved
+*            incorrectly if you had saved perviously with a
+*            smaller numbre of weapons in your inventory or if
+*            you unequipped a character's weapon which was
+*            equipped when you made that save file.
+*
+*        -Fixed a bug that was causing level bonus params to load
+*            incorrectly.  Old save files will still have this
+*            issue as it is likely if you saved multiple times
+*            the values were stripped out of the save file.
+*
+*        -Fixed a bug where SP and EX Params were not being
+*            applied correctly to weapons.
+*
+*        -Fixed bug that was causing SP and EX Params to show with
+*            many decimal values.
+*
+*        -Fixed several bugs that were allowing traits to exceed
+*            -100%.
+*
+*        -Fixed a bug where the sign would sometimes be incorrectly
+*            displayed when a base weapon has a param that the
+*            donor weapon has during synthesizing.
+*
+*        -Fixed a bug which would crash the game when buying a
+*            weapon while having a weapon equipped.
+*
+*        -Fixed a bug which would crash the game when selling a
+*            weapon.
+*
+*        -Fixed a bug which prevented weapons from being sold.
+*
+*        -Fixed a bug that caused your gold to be invalidated when
+*            selling a weapon.
+*
+*        -Fixed a bug which caused the price to show incorrectly
+*            when selling a weapon.
+*
+*        -Added missing note tag info to "Windbag" npc.
+*
+*        -Added plugin parameter to show only non-zero parameters
+*            in the BS status window.
+*
+*        -Added plugin parameter to enable synth level/refine
+*            requirements.
+*
+*        -Added two new note tag attributes: ExpMulti and SynthRefReqs.
+*
+*        -Added a plugin command to toggle show non-zero stats parameter
+*            from in-game.
+*
+*        -Added a plugin command to toggle synth level/refine
+*            requirements from in-game.
+*
+*        -Added a new feature which will alter how some of the information
+*            in the BS status window is displayed depending on what command
+*            item is selected in the action pane to allow players to better
+*            understand if their weapons meet the requirements for those
+*            actions.
+*
+*        -Added a new feature which will alter the help text in the BS action
+*            pane if a weapon does not meet the requirements for an action.
+*            The text will show general information about what is has to be
+*            met to use the command item.
+*
+*        -Changed how sp/ex parameters are displayed in the BS status window.
+*            They now correctly show up as percentages.  This has introduced
+*            a bug where the value may have many decimal places.  This will
+*            be fixed in the next update.
+*
+*        -Added a new area which is made to be extremely difficult and requires
+*            highly advanced weapons.  The boss of this area gives you a weapon
+*            that has a parameter on it that increases exp gained that can be
+*            used as a synthesis donor weapon to propogate it to other weapons.
+*
+*        -Added new weapons: The Novice Sword, Longbow, Crossbow, Ash Cane,
+*            Elder Cane, Battleaxe, and Obsidian Axe.  Get the novice sword
+*            from the boss in the new area the others can be bought in a shop.
+*
+*        -Added stronger armor for the new area: Holy Armor, Tunsgan Helm,
+*            Crusader's Shield, Witch's Hat, Diadem of Venus, Robe of Tharsis,
+*            and Shroud of Turin.  They are all in the shop.
+*
+*        -Added in stronger healing items also in the shop.
+*
+*        -Added some hidden items into the new area.
+*
+*        -Added a shop npc.
+*
+*        -Added new plugin info to "Windbag" npc.
+*
+*
 *     1.0.1 - 
-        -Fixed incorrectly docuented note tag attribute names.  Fixed
-            an issue in the Blacksmith option selection window which was
-            causing the help text to display incorrectly.  Also changed
-            the wording of that window's help text.
-        -Fixed an issue when entering battle with a character that has
-            no weapon equipped which was causing the game to crash.
+*        -Fixed incorrectly docuented note tag attribute names.  Fixed
+*            an issue in the Blacksmith option selection window which was
+*            causing the help text to display incorrectly.  Also changed
+*            the wording of that window's help text.
+*
+*        -Fixed an issue when entering battle with a character that has
+*            no weapon equipped which was causing the game to crash.
+*
+*
 *     1.0.0 - Initial version released
 *
 *
@@ -468,8 +635,8 @@ var $instWeapons      = null; //For Geowil_AWP
 	var bIsSynthSysActive = (params['Synthesis System'] === "true");
 	var bIsRepairSysActive = (params['Repair and Durability System'] === "true");
 	var bAreExtParmsEnabled = (params['Enable Extended Params'] === "true");
-
-
+	var bSynthRefReq = (params['Enable Synth Level/Refine Requirements'] === "true");
+	var bOnlyNon0Params = (params['Only Show Non-0 Stats'] === "true");
 
 
 	/*
@@ -686,7 +853,9 @@ var $instWeapons      = null; //For Geowil_AWP
 		var instWeapon = this._equips[0];
 
 		if (instWeapon){
-			instWeapon.changeExp(gainedExp);
+			var finalExp = gainedExp * this._equips[0]._wepExpMulti;
+
+			instWeapon.changeExp(finalExp);
 		}
 	};
 
@@ -891,7 +1060,7 @@ var $instWeapons      = null; //For Geowil_AWP
 					        var durDamage = this.subject()._equips[0]._maxDur * this.subject()._equips[0]._durDmg;
 					        var dur = this.subject()._equips[0]._durability;
 
-					        if (durDamage < 1 && durDamage > 0){
+					        if (durDamage < 1 && durDamage >= 0){
 					        	durDamage = 1;
 					        } else{
 					        	durDamage = Math.round(durDamage);
@@ -922,6 +1091,15 @@ var $instWeapons      = null; //For Geowil_AWP
 		Geowil_Scene_Load.call(this,arguments);
 		$instWeapons.processLoadContents();
 	}
+
+
+	/*
+		New, alaiased, and overriden Scene_Shop functions
+	*/
+	Scene_Shop.prototype.sellingPrice = function() {
+	    if (this._item.constructor != Game_InstanceWeapon) { return Math.floor(this._item.price / 2); }
+	    else { return Math.floor(this._item._price / 2); }
+	};
 
 
 	/*
@@ -998,6 +1176,77 @@ var $instWeapons      = null; //For Geowil_AWP
 
 		this._data = listData;
 	}
+
+	/*
+		New, aliased, and overriden Window_ShopStatus functions
+	*/
+	Window_ShopStatus.prototype.currentEquippedItem = function(actor, etypeId) {
+	    var list = [];
+	    var equips = actor.equips();
+	    var slots = actor.equipSlots();
+	    for (var i = 0; i < slots.length; i++) {
+	        if (slots[i] === etypeId) {
+	            list.push(equips[i]);
+	        }
+	    }
+	    var paramId = this.paramId();
+	    var worstParam = Number.MAX_VALUE;
+	    var worstItem = null;
+	    for (var j = 0; j < list.length; j++) {
+	    	if (list[i]){
+		    	if (list[i].constructor != Game_InstanceWeapon){
+		        	if (list[j] && list[j].params[paramId] < worstParam) {
+		            	worstParam = list[j].params[paramId];
+		            	worstItem = list[j];
+		        	}
+		        } else{
+		        	if (list[j] && list[j]._baseParams[paramId] < worstParam) {
+		            	worstParam = list[j]._basePparams[paramId];
+		            	worstItem = list[j];
+		        	}
+		        }
+	    	}
+	    }
+	    return worstItem;
+	};
+
+	/*
+		New, aliased, and overridden Window_ShopSell functions
+	*/
+	Window_ShopSell.prototype.isEnabled = function(item) {
+    	if (item.constructor != Game_InstanceWeapon) { return item && item.price > 0; }
+    	else {
+    		var finPrice
+    		if (item._refLevel > 0){
+    			finPrice = item._price * (item._refLevel * item._refBonus);
+    		} else { finPrice = item._price; }
+
+    		return item && finPrice > 0;
+    	}
+	};
+
+	Window_ShopStatus.prototype.drawActorParamChange = function(x, y, actor, item1) {
+	    var width = this.contents.width - this.textPadding() - x;
+	    var paramId = this.paramId();
+	    var change;
+
+	    if (this._item){
+		    if (this._item.constructor != Game_InstanceWeapon) {
+		    	if (item1){
+		    		if (item1.constructor != Game_InstanceWeapon) { change = this._item.params[paramId] - (item1 ? item1.params[paramId] : 0); }
+		    		else { change = this._item.params[paramId] - (item1 ? item1._baseParams[paramId] : 0); }
+		    	} else { change = this._item.params[paramId] - (item1 ? item1._baseParams[paramId] : 0); }
+		    } else {
+		    	if (item1){
+		    		if (item1.constructor != Game_InstanceWeapon) { change = this._item._baseParams[paramId] - (item1 ? item1.params[paramId] : 0); }
+		    		else { change = this._item._baseParams[paramId] - (item1 ? item1._baseParams[paramId] : 0); }
+		    	} else { change = this._item._baseParams[paramId] - (item1 ? item1._baseParams[paramId] : 0); }
+		    }
+		}
+
+	    this.changeTextColor(this.paramchangeTextColor(change));
+	    this.drawText((change > 0 ? '+' : '') + change, x, y, width, 'right');
+	};
 
 
 	/*
@@ -1161,6 +1410,14 @@ var $instWeapons      = null; //For Geowil_AWP
 			matches = (/AWP ExtendedParams (\w+)/.exec(command) || []);
 
 			toggleExtParams(matches[1]);
+		}  else if(command.match(/AWP SynthReqs (\w+)/)){
+			matches = (/AWP SynthReqs (\w+)/.exec(command) || []);
+
+			toggleSynthReqs(matches[1]);
+		}  else if(command.match(/AWP OnlyNon0Params (\w+)/)){
+			matches = (/AWP OnlyNon0Params (\w+)/.exec(command) || []);
+
+			toggleNZParams(matches[1]);
 		} 
 	};
 
@@ -1196,6 +1453,22 @@ var $instWeapons      = null; //For Geowil_AWP
 		}
 	}
 
+	function toggleSynthReqs(state){
+		if (state == "On" || state == "on"){
+			bSynthRefReq = true;
+		} else{
+			bSynthRefReq = false;
+		}
+	}
+
+	function toggleNZParams(state){
+		if (state == "On" || state == "on"){
+			bOnlyNon0Params = true;
+		} else{
+			bOnlyNon0Params = false;
+		}
+	}
+
 	// Change EXP
 	Game_Interpreter.prototype.command315 = function() {
 	    var value = this.operateValue(this._params[2], this._params[3], this._params[4]);
@@ -1220,6 +1493,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 		this._wepListWnd.show();
 		this._wepListWnd.activate();
+		this._wepListWnd.select(0);
 		this._helpWindow.show();
 
 		this._wepStatWnd.show();
@@ -1281,7 +1555,7 @@ var $instWeapons      = null; //For Geowil_AWP
 		var x = 0;
 		var y = this._helpWindow.height + 10;
 
-		this._wepActWnd = new Window_ActionPane(w,h,x,y);
+		this._wepActWnd = new Window_ActionPane(w,h,x,y,this._wepStatWnd);
 		this._wepActWnd.setHandler('ok',this.onWepActSelect.bind(this));
 		this._wepActWnd.setHandler('cancel',this.onWepActSelectCancel.bind(this));
 		this._wepActWnd.setHelpWindow(this._helpWindow);
@@ -1373,9 +1647,10 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.setWeapon(this._wepListWnd.getSelectedWeapon());
 		this._wepActWnd.refresh();
 		this._wepActWnd.show();
-		this._wepActWnd.activate();
+		this._wepActWnd.activate();		
 
 		this.updateWepStatWnd(false);
+		this._wepActWnd.select(0);
 	}
 
 	Scene_Blacksmith.prototype.onWepSelectCancel = function(){
@@ -1422,6 +1697,8 @@ var $instWeapons      = null; //For Geowil_AWP
 			this._lvlUpWnd.refresh();
 			this._lvlUpWnd.show();
 			this._lvlUpWnd.activate();
+			this._lvlUpWnd.select(0);
+
 			this._gldWnd.updateGold();
 			this._gldWnd.show();
 			this._gldWnd.refresh();
@@ -1435,6 +1712,7 @@ var $instWeapons      = null; //For Geowil_AWP
 			this._refWnd.refresh();
 			this._refWnd.show();
 			this._refWnd.activate();
+			this._refWnd.select(0);
 
 			this._gldWnd.updateGold();
 			this._gldWnd.show();
@@ -1448,6 +1726,8 @@ var $instWeapons      = null; //For Geowil_AWP
 			this._wepDonorListWnd.refresh();
 			this._wepDonorListWnd.show();
 			this._wepDonorListWnd.activate();
+			this._wepDonorListWnd.select(0);
+
 
 			this.updateWepStatWnd(true);
 			this._wepStatWnd.refresh(false,false,false,true,false,false);
@@ -1461,6 +1741,7 @@ var $instWeapons      = null; //For Geowil_AWP
 			this._repWnd.prepareWindow();
 			this._repWnd.refresh();
 			this._repWnd.activate();
+			this._repWnd.select(0);
 
 			this._gldWnd.updateGold();
 			this._gldWnd.show();
@@ -1477,6 +1758,7 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepListWnd.show();
 		this._wepListWnd.activate();
 		this._wepListWnd.refresh();
+		this._wepListWnd.select(0);
 
 		this.updateWepStatWnd(true);
 		this._wepListWnd.refresh();
@@ -1495,6 +1777,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 		this._wepStatWnd.setWeapon(this._lvlUpWnd.getWeapon());
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
 
 		this._gldWnd.hide();
 	}
@@ -1507,6 +1790,8 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.refresh();
 
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
+
 		this._gldWnd.hide();
 	}
 
@@ -1521,6 +1806,8 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.refresh();
 
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
+
 		this._gldWnd.hide();
 	}
 
@@ -1531,6 +1818,8 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.activate();
 
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
+
 		this._gldWnd.hide();
 	}
 
@@ -1546,6 +1835,7 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._synthWnd.refresh();
 		this._synthWnd.show();
 		this._synthWnd.activate();
+		this._synthWnd.select(0);
 
 		this._gldWnd.updateGold();
 		this._gldWnd.refresh();
@@ -1565,7 +1855,8 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.refresh();
 
 		this.updateWepStatWnd(false);
-		this._wepStatWnd.refresh(true,false,false,false,false,false);		
+		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
 	}
 
 	Scene_Blacksmith.prototype.onSynthOk = function(){
@@ -1579,6 +1870,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 		this._wepStatWnd.setWeapon(this._wepListWnd.getSelectedWeapon());
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
 
 		this._gldWnd.hide();
 	}
@@ -1591,6 +1883,8 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.refresh();
 
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
+
 		this._gldWnd.hide();
 	}
 
@@ -1605,6 +1899,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 		this._wepStatWnd.setWeapon(this._wepListWnd.getSelectedWeapon());
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
 
 		this._gldWnd.hide();
 	}
@@ -1617,6 +1912,8 @@ var $instWeapons      = null; //For Geowil_AWP
 		this._wepActWnd.refresh();
 
 		this._wepStatWnd.refresh(true,false,false,false,false,false);
+		this._wepActWnd.select(0);
+
 		this._gldWnd.hide();
 	}
 
@@ -1871,7 +2168,7 @@ var $instWeapons      = null; //For Geowil_AWP
 	}
 
 	Window_WepStatus.prototype.refresh = function(bIsExpandedInfo,bIsLevelUp,bIsRefine,bIsSynthInfo,bIsSynth,bIsRepair){
-		if (bIsExpandedInfo) { this.expandedInfo(); }
+		if (bIsExpandedInfo) { this.expandedInfo(false,false,false); }
 		else if (bIsLevelUp) { this.levelupInfo(); }
 		else if (bIsRefine) { this.refInfo(); }
 		else if (bIsSynthInfo) { this.synthInfo(); }
@@ -1924,16 +2221,31 @@ var $instWeapons      = null; //For Geowil_AWP
 	    return 30;
 	};
 
-	Window_WepStatus.prototype.expandedInfo = function(){
+	Window_WepStatus.prototype.expandedInfo = function(bLevelUp,bRefine,bSynth){
 		if (this._wep){
 			this.contents.clear();
 
 			var y = 5;
 			var x = 5;
 
-			var wLvl = "Lvl: " + this._wep._level;
+			var wLvl;
+
+			if (bLevelUp || bRefine || (bSynth && bSynthRefReq)){
+				wLvl = "Lvl: " + this._wep._level + "/" + this._wep._maxLvl;	
+			} else{
+				wLvl = "Lvl: " + this._wep._level;
+			}
+
 			var wExp = "EXP: " + this._wep._exp;
-			var wRef = "Refinement: " + this._wep._refLevel;
+			
+			var wRef;
+
+			if (bSynth && bSynthRefReq){
+				wRef = "Refinement: " + this._wep._refLevel + "/" + this._wep._synthRefReq;	
+			} else{
+				wRef= "Refinement: " + this._wep._refLevel;
+			}
+
 			var wDur = "Durability: " + this._wep._durability + "/" + this._wep._maxDur;
 
 			var traits = {};
@@ -1945,38 +2257,42 @@ var $instWeapons      = null; //For Geowil_AWP
 				}
 			}
 
-			//Base Params
-			var wAtk = "Atk:" + ~~this._wep.atk;
-			var wDef = "Def:" + ~~this._wep.def;
-			var wMat = "Mat:" + ~~this._wep.mat;
-			var wMdf = "Mdf:" + ~~this._wep.mdf;
-    		var wAgi = "Agi:" + ~~this._wep.agi;
-    		var wLuk = "Luk:" + ~~this._wep.luk;
-    		var wHit = "Hit:" + ~~this._wep.hit;
-    		var wEva = "Eva:" + ~~this._wep.eva;
-    		var wCri = "Cri:" + ~~this._wep.cri;
-    		var wHrg = "Hrg:" + ~~this._wep.hrg;
-    		var wMrg = "Mrg:" + ~~this._wep.mrg;
-    		var wTrg = "Trg:" + ~~this._wep.trg;
+			
+			var parmLabels = [];
 
-    		if (bAreExtParmsEnabled){
-	    		//Extended Params
-			    var wMhp = "Mhp:" + ~~this._wep.mhp;
-			    var wMmp = "Mmp:" + ~~this._wep.mmp;
-			    var wCev = "Cev:" + ~~this._wep.cev;
-			    var wMev = "Mev:" + ~~this._wep.mev;
-			    var wCnt = "Cnt:" + ~~this._wep.cnt;
-			    var wMfr = "Mfr:" + ~~this._wep.mrf;
-			    var wTgr = "Tgr:" + ~~this._wep.tgr;
-			    var wGrd = "Grd:" + ~~this._wep.grd;
-			    var wRec = "Rec:" + ~~this._wep.rec;
-			    var wPha = "Pha:" + ~~this._wep.pha;
-			    var wMcr = "Mcr:" + ~~this._wep.mcr;
-			    var wTcr = "Tcr:" + ~~this._wep.tcr;
-			    var wPdr = "Pdr:" + ~~this._wep.pdr;
-			    var wMdr = "Mdr:" + ~~this._wep.mdr;
-			    var wFdr = "Fdr:" + ~~this._wep.fdr;
-			    var wExr = "Exr:" + ~~this._wep.exr;
+			//For Base Parms
+			for (var i1 = 0; i1 < this._wep._baseParams.length; i1++){
+				var pVal = this._wep._baseParams[i1];
+
+				if (bOnlyNon0Params){
+					if (pVal > 0 || pVal < 0) { parmLabels.push(this.getParmName(0,i1) + ":" + pVal); }
+				} else{
+					parmLabels.push(this.getParmName(0,i1) + ":" + pVal);
+				}
+			}
+
+			if (bAreExtParmsEnabled){
+				//For Ex Parms
+				for (var i1 = 0; i1 < this._wep._exParams.length; i1++){
+					var pVal = this._wep._exParams[i1];
+
+					if (bOnlyNon0Params){
+						if (pVal > 0 || pVal < 0) { parmLabels.push(this.getParmName(1,i1) + ":" + (pVal * 100).toFixed(2) + "%"); }
+					} else{
+						parmLabels.push(this.getParmName(1,i1) + ":" + pVal);
+					}
+				}
+
+				//For SP Parms
+				for (var i1 = 0; i1 < this._wep._spParams.length; i1++){
+					var pVal = this._wep._spParams[i1];
+
+					if (bOnlyNon0Params){
+						if (pVal > 0.00 || pVal < 0.00) { parmLabels.push(this.getParmName(2,i1) + ":" + (pVal * 100).toFixed(2) + "%"); }
+					} else{
+						parmLabels.push(this.getParmName(2,i1) + ":" + (pVal * 100).toFixed(2) + "%");
+					}
+				}
 			}
 
 			this.drawIcon(this._wep._icon,x-1,y);
@@ -1985,8 +2301,20 @@ var $instWeapons      = null; //For Geowil_AWP
 			this.drawText(this._wep._name,x, y, this.textWidth(this._wep._name), 'left');
 			x += this.textWidth(this._wep._name);
 
+			if (bRefine || (bSynth && bSynthRefReq)){
+				if (this._wep._level != this._wep._maxLvl){
+					this.changeTextColor(pDecColor);
+				} else{
+					this.changeTextColor(pIncColor);
+				}
+			}
+
 			this.drawText(wLvl,x+10, y, 125, 'left');
 			x += 25 + this.textWidth(wLvl);
+
+			if (bRefine || (bSynth && bSynthRefReq)){
+				this.resetTextColor();
+			}
 
 			this.drawText(wExp, x, y, 300, 'left');
 			x = 20;
@@ -1995,8 +2323,19 @@ var $instWeapons      = null; //For Geowil_AWP
 			
 
 			if (bIsRefineSysActive){
+				if (bSynth && bSynthRefReq){
+					if (this._wep._refLevel < this._wep._synthRefReq){
+						this.changeTextColor(pDecColor);
+					} else{
+						this.changeTextColor(pIncColor);
+					}
+				}
 				this.drawText(wRef, 20, (y+this._lineHeight*3)+16, 220, 'left');
 				x += 25 + this.textWidth(wRef);
+			}
+
+			if (bSynth && bSynthRefReq){					
+				this.resetTextColor();			
 			}
 
 			if (bIsRepairSysActive){
@@ -2013,97 +2352,27 @@ var $instWeapons      = null; //For Geowil_AWP
 
 			//Params
 			this.contents.fontSize = 22;
-
 			x = 2;
-			this.drawText(wAtk,x,(y+this._lineHeight*6)+15,120,'left');
-			x += 15 + this.textWidth(wAtk);
+			var yM = 6;
+			var y1 = y+this._lineHeight*yM;
 
-			this.drawText(wDef,x,(y+this._lineHeight*6)+15,120,'left');
-			x += this.textWidth(wDef) + 15;
+			for (var i1 = 0, i2 = 0; i1 < parmLabels.length; i1++){
+				var label = parmLabels[i1];
+				
+				if (i2 == 3){					
+					this.drawText(label,x,y1+15,this.textWidth(label),'left');
 
-			this.drawText(wMat,x,(y+this._lineHeight*6)+15,120,'left');
-			x += this.textWidth(wMat) + 15;			
+					x = 2;
+					yM++;
+					y1 = y+this._lineHeight*yM;
 
-			this.drawText(wMdf,x,(y+this._lineHeight*6)+15,120,'left');			
-			
+					i2 = 0;					
+				} else{
+					this.drawText(label,x,y1+15,this.textWidth(label),'left');
+					x += this.textWidth(label) + 15;
 
-			x =2;
-			this.drawText(wAgi,x,(y+this._lineHeight*7)+15,120,'left');
-			x += this.textWidth(wAgi) + 15;
-
-			this.drawText(wLuk,x,(y+this._lineHeight*7)+15,120,'left');
-			x += this.textWidth(wLuk) + 15;
-			
-			this.drawText(wHit,x,(y+this._lineHeight*7)+15,120,'left');
-			x += this.textWidth(wLuk) + 15;			
-
-			this.drawText(wEva,x,(y+this._lineHeight*7)+15,120,'left');
-
-
-			x =2;
-			this.drawText(wCri,x,(y+this._lineHeight*8)+15,120,'left');
-			x += this.textWidth(wCri) + 15;
-
-			this.drawText(wHrg,x,(y+this._lineHeight*8)+15,120,'left');
-			x += 15 + this.textWidth(wHrg);
-
-			this.drawText(wMrg,x,(y+this._lineHeight*8)+15,120,'left');
-			x += this.textWidth(wMrg) + 15;
-
-			this.drawText(wTrg,x,(y+this._lineHeight*8)+15,120,'left');
-
-
-			if (bAreExtParmsEnabled){
-				x =2;
-				this.drawText(wMhp,x,(y+this._lineHeight*9)+15,120,'left');
-				x += this.textWidth(wMhp) + 15;
-
-				this.drawText(wMmp,x,(y+this._lineHeight*9)+15,120,'left');
-				x += 15 + this.textWidth(wMmp);
-
-				this.drawText(wCev,x,(y+this._lineHeight*9)+15,120,'left');
-				x += this.textWidth(wCev) + 15;
-
-				this.drawText(wMev,x,(y+this._lineHeight*9)+15,120,'left');
-
-
-				x =2;
-				this.drawText(wCnt,x,(y+this._lineHeight*10)+15,120,'left');
-				x += this.textWidth(wCnt) + 15;
-
-				this.drawText(wMfr,x,(y+this._lineHeight*10)+15,120,'left');
-				x += this.textWidth(wMfr) + 15;
-
-				this.drawText(wTgr,x,(y+this._lineHeight*10)+15,120,'left');
-				x += this.textWidth(wTgr) + 15;
-
-				this.drawText(wGrd,x,(y+this._lineHeight*10)+15,120,'left');
-
-
-				x =2
-				this.drawText(wRec,x,(y+this._lineHeight*11)+15,120,'left');
-				x += this.textWidth(wRec) + 15;
-
-				this.drawText(wPha,x,(y+this._lineHeight*11)+15,120,'left');
-				x += this.textWidth(wRec) + 15;
-
-				this.drawText(wMcr,x,(y+this._lineHeight*11)+15,120,'left');
-				x += this.textWidth(wMcr) + 15;
-
-				this.drawText(wTcr,x,(y+this._lineHeight*11)+15,120,'left');
-
-
-				x =2
-				this.drawText(wPdr,x,(y+this._lineHeight*12)+15,120,'left');
-				x += this.textWidth(wPdr) + 15;
-
-				this.drawText(wMdr,x,(y+this._lineHeight*12)+15,120,'left');
-				x += this.textWidth(wMdr) + 15;
-
-				this.drawText(wFdr,x,(y+this._lineHeight*12)+15,120,'left');
-				x += this.textWidth(wFdr) + 15;
-
-				this.drawText(wExr,x,(y+this._lineHeight*12)+15,120,'left');
+					i2++;
+				}
 			}
 
 
@@ -2131,7 +2400,6 @@ var $instWeapons      = null; //For Geowil_AWP
 			}
 		}
 	}
-
 
 	Window_WepStatus.prototype.levelupInfo = function(){
 		if (this._wep){
@@ -2179,15 +2447,15 @@ var $instWeapons      = null; //For Geowil_AWP
 				//For Ex Parms
 				for (var pId in newEParams){
 					if (newEParams[pId][wLevel] != 0){
-						var parmStr = this.getParmName(1,pId) + " " + this.setSign(newEParams[pId][wLevel],true) + newEParams[pId][wLevel];
+						var parmStr = this.getParmName(1,pId) + " " + this.setSign(newEParams[pId][wLevel],true) + (newEParams[pId][wLevel] * 100).toFixed(2) + "%";
 						newParmLabels.push(parmStr);
 					}
 				}
 
 				//For SP Parms
 				for (var pId in newSParams){
-					if (newSParams[pId][wLevel] != 0){
-						var parmStr = this.getParmName(2,pId) + " " + this.setSign(newSParams[pId][wLevel],true) + newSParams[pId][wLevel];
+					if (newSParams[pId][wLevel] != 0.00){
+						var parmStr = this.getParmName(2,pId) + " " + this.setSign(newSParams[pId][wLevel],true) + (newSParams[pId][wLevel] * 100).toFixed(2) + "%";
 						newParmLabels.push(parmStr);
 					}
 				}
@@ -2205,7 +2473,7 @@ var $instWeapons      = null; //For Geowil_AWP
 			this.drawText(this._wep._name,x, y, this.textWidth(this._wep._name), 'left');
 			x += this.textWidth(this._wep._name);
 
-			this.changeTextColor("#0FA908");
+			this.changeTextColor(pIncColor);
 
 			this.drawText(wLvl,x+10, y, 125, 'left');
 			x += 25 + this.textWidth(wLvl);
@@ -2252,7 +2520,7 @@ var $instWeapons      = null; //For Geowil_AWP
 				for (var i1 = 0, i2 = 0; i1 < newParmLabels.length; i1++){
 					var label = newParmLabels[i1];
 					
-					if (i2 == 4){					
+					if (i2 == 3){					
 						this.drawText(label,x,y1+15,this.textWidth(label),'left');
 
 						x = 2;
@@ -2295,7 +2563,12 @@ var $instWeapons      = null; //For Geowil_AWP
 							if (traits[tId].code == newTraits[nTId].code && traits[tId].dataId == newTraits[nTId].dataId){
 								trIcon = $dataStates[traits[tId].dataId].iconIndex;
 								trName = $dataStates[traits[tId].dataId].name;
-								trChance = this.setSign(100*(newTraits[nTId].value),true) + ~~100 * newTraits[nTId].value + "%";
+
+								if (traits[tId].value + newTraits[nTId].value < 1.00){
+									trChance = this.setSign(100*(newTraits[nTId].value),true) + ~~100 * newTraits[nTId].value + "%";
+								} else{
+									trChance = "+0%";
+								}
 
 								y2 = (y+this._lineHeight*(yM1+i1))+(yM2*i1);
 
@@ -2373,7 +2646,7 @@ var $instWeapons      = null; //For Geowil_AWP
 			var x = 5;
 
 			var wLvl = "Lvl 1";
-			var wExp = "EXP: 0";
+			var wExp = "EXP: " + this._wep._exp;
 			var wRef = "Refinement: +1";
 
 			var wDur = "";
@@ -2394,8 +2667,8 @@ var $instWeapons      = null; //For Geowil_AWP
 					var parmVal = this._wep._baseParams[pId];
 					var finVal = 0;
 
-					if (this._wep._refLevel == 0) { finVal = Math.round(parmVal*this._wep._refBonus) }
-					else { finVal = Math.round(parmVal*(this._wep._refBonus*this._wep._refLevel)) }
+					if (this._wep._refLevel == 0) { finVal = Math.round(parmVal*this._wep._refBonus); }
+					else { finVal = Math.round(parmVal*(this._wep._refBonus*this._wep._refLevel)); }
 
 					var parmStr = this.getParmName(0,pId) + " " + this.setSign(finVal,true) + finVal;
 					newParmLabels.push(parmStr);
@@ -2408,10 +2681,10 @@ var $instWeapons      = null; //For Geowil_AWP
 					var parmVal = this._wep._exParams[pId];
 					var finVal = 0;
 
-					if (this._wep._refLevel == 0) { finVal = Math.round(parmVal*this._wep._refBonus) }
-					else { finVal = Math.round(parmVal*(this._wep._refBonus*this._wep._refLevel)) }
+					if (this._wep._refLevel == 0) { finVal = parmVal*this._wep._refBonus; }
+					else { finVal = parmVal*(this._wep._refBonus*this._wep._refLevel); }
 
-					var parmStr = this.getParmName(1,pId) + " " + this.setSign(finVal,true) + finVal;
+					var parmStr = this.getParmName(1,pId) + " " + this.setSign(finVal,true) + (finVal * 100).toFixed(2) + "%";
 					newParmLabels.push(parmStr);
 				}
 			}
@@ -2422,10 +2695,10 @@ var $instWeapons      = null; //For Geowil_AWP
 					var parmVal = this._wep._spParams[pId];
 					var finVal = 0;
 
-					if (this._wep._refLevel == 0) { finVal = Math.round(parmVal*this._wep._refBonus) }
-					else { finVal = Math.round(parmVal*(this._wep._refBonus*this._wep._refLevel)) }
-
-					var parmStr = this.getParmName(1,pId) + " " + this.setSign(finVal,true) + finVal;
+					if (this._wep._refLevel == 0) { finVal = parmVal*this._wep._refBonus; }
+					else { finVal = parmVal*(this._wep._refBonus*this._wep._refLevel); }
+					
+					parmStr = this.getParmName(2,pId) + " " + this.setSign(finVal,true) + (finVal * 100).toFixed(2) + "%";
 					newParmLabels.push(parmStr);
 				}
 			}
@@ -2443,11 +2716,8 @@ var $instWeapons      = null; //For Geowil_AWP
 
 			this.resetTextColor();
 
-			this.changeTextColor(pDecColor);
 			this.drawText(wExp, x, y, 300, 'left');
 			x = 20;
-
-			this.resetTextColor();
 
 			this.drawTextEx(this._wep._description, x, y+this._lineHeight);
 
@@ -2487,7 +2757,7 @@ var $instWeapons      = null; //For Geowil_AWP
 			for (var i1 = 0, i2 = 0; i1 < newParmLabels.length; i1++){
 				var label = newParmLabels[i1];
 				
-				if (i2 == 4){					
+				if (i2 == 3){					
 					this.drawText(label,x,y1+15,this.textWidth(label),'left');
 
 					x = 2;
@@ -2524,9 +2794,14 @@ var $instWeapons      = null; //For Geowil_AWP
 				var newChance = 0;
 
 				if (this._wep._refLevel == 0) { newChance = Math.round(100*(traits[tId].value*this._wep._refBonus)); }
-				else { newChance = Math.round(100*(traits[tId].value*(this._wep._refBonus*this._wep._refLevel))); }
+				else { newChance = Math.round(100*(traits[tId].value))+Math.round(100*(traits[tId].value*(this._wep._refBonus*this._wep._refLevel))); }
 
-				var trChance = this.setSign(newChance,true) + newChance + "%";
+				var trChance;
+
+				if (newChance < 100) { trChance = this.setSign(newChance,true) + newChance + "%"; }
+				else { trChance = "100%"; }
+
+				
 
 				y2 = (y+this._lineHeight*(yM1+i1))+(yM2*i1);
 
@@ -2667,7 +2942,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 				for (var bPId in baseEParams)
 				if (donorEParams[dPId] != 0 && baseEParams[bPId] != 0 && bPId == dPId){
-					parmStr = this.getParmName(1,bPId) + " " + this.setSign(Math.round(donorEParams[bPId]*0.15),true) + Math.round(donorEParams[bPId]*0.15);
+					parmStr = this.getParmName(1,bPId) + " " + this.setSign(Math.round(donorEParams[bPId]*0.15),true) + ((donorEParams[bPId]*0.15) * 100).toFixed(2) + "%";
 					newParmLabels.push(parmStr);
 
 					bParamExists = true;
@@ -2675,7 +2950,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 				if (!bParamExists){
 					if (donorEParams[dPId] != 0){
-						parmStr = this.getParmName(1,dPId) + " " + this.setSign(Math.round(donorEParams[dPId]*0.15),true) + Math.round(donorEParams[dPId]*0.3);
+						parmStr = this.getParmName(1,dPId) + " " + this.setSign(Math.round(donorEParams[dPId]*0.15),true) + ((donorEParams[dPId]*0.3) * 100).toFixed(2) + "%";
 						newParmLabels.push(parmStr);
 					}
 
@@ -2689,7 +2964,8 @@ var $instWeapons      = null; //For Geowil_AWP
 
 				for (var bPId in baseSParams)
 				if (donorSParams[dPId] != 0 && baseSParams[bPId] != 0 && bPId == dPId){
-					parmStr = this.getParmName(2,bPId) + " " + this.setSign(Math.round(donorSParams[bPId]*0.15),true) + Math.round(donorSParams[bPId]*0.15);
+					parmStr = this.getParmName(2,bPId) + " " + this.setSign(Math.round(donorSParams[bPId]*0.15),true) + ((donorSParams[bPId]*0.15) * 100).toFixed(2) + "%";	
+					
 					newParmLabels.push(parmStr);
 
 					bParamExists = true;
@@ -2697,7 +2973,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 				if (!bParamExists){
 					if (donorSParams[dPId] != 0){
-						parmStr = this.getParmName(2,dPId) + " " + this.setSign(Math.round(donorSParams[dPId]*0.15),true) + Math.round(donorSParams[dPId]*0.30);
+						parmStr = this.getParmName(2,dPId) + " " + this.setSign(Math.round(donorSParams[dPId]*0.30),true) + ((donorSParams[dPId]*0.30) * 100).toFixed(2) + "%";
 						newParmLabels.push(parmStr);
 					}
 
@@ -2757,7 +3033,7 @@ var $instWeapons      = null; //For Geowil_AWP
 			for (var i1 = 0, i2 = 0; i1 < newParmLabels.length; i1++){
 				var label = newParmLabels[i1];
 				
-				if (i2 == 4){					
+				if (i2 == 3){					
 					this.drawText(label,x,y1+15,this.textWidth(label),'left');
 
 					x = 2;
@@ -2794,13 +3070,18 @@ var $instWeapons      = null; //For Geowil_AWP
 
 					var trIcon = 0;
 					var trName = "";
-					var trChance = 0;
+					var trChange = 0;
+					var trChange2 = 0;
 
 					for (var bTId in bTraits){					
 						if (bTraits[bTId].code == dTraits[dTId].code && bTraits[bTId].dataId == dTraits[dTId].dataId){
 							trIcon = $dataStates[bTraits[bTId].dataId].iconIndex;
 							trName = $dataStates[bTraits[bTId].dataId].name;
-							trChance = this.setSign(100*((dTraits[dTId].value)*0.15),true) + Math.ceil(100 * (dTraits[dTId].value * 0.15)) + "%";
+
+							trChange2 = Math.ceil(100 * (dTraits[dTId].value * 0.15)) + Math.ceil(100 * (bTraits[bTId].value));
+
+							if (trChange2 < 100) { trChange = this.setSign(100*((dTraits[dTId].value)*0.15),true) + Math.ceil(100 * (dTraits[dTId].value * 0.15)) + "%"; }
+							else { trChange = "100%"; }							
 
 							y2 = (y+this._lineHeight*(yM1+i1))+(yM2*i1);
 
@@ -2813,7 +3094,7 @@ var $instWeapons      = null; //For Geowil_AWP
 							x += this.textWidth(trName) + 10;
 
 							this.changeTextColor(pIncColor);
-							this.drawText(trChance,x,y1,60,'left');
+							this.drawText(trChange,x,y1,60,'left');
 							this.resetTextColor();
 
 							
@@ -3076,7 +3357,6 @@ var $instWeapons      = null; //For Geowil_AWP
 
 	Window_WepStatus.prototype.setSign = function(val,bForBonuses){
 		if (val > 0 && bForBonuses) { return "+"; }
-		else if (val < 0) { return "-"; }
 		else { return ""; }
 	}
 
@@ -3113,7 +3393,7 @@ var $instWeapons      = null; //For Geowil_AWP
 	Window_ActionPane.prototype = Object.create(Window_Selectable.prototype);
 	Window_ActionPane.prototype.constructor = Window_ActionPane;
 
-	Window_ActionPane.prototype.initialize = function(w,h,x,y){
+	Window_ActionPane.prototype.initialize = function(w,h,x,y, statWnd){
 		Window_Selectable.prototype.initialize.call(this,x,y,w,h);
 		this._selection = "";
 		this._w = w;
@@ -3121,6 +3401,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 		this._wep = null;
 		this._wID = 0;
+		this._statusWindow = statWnd;
 
 		this.prepareWindow();
 	}
@@ -3188,15 +3469,44 @@ var $instWeapons      = null; //For Geowil_AWP
 						this.contents.paintOpacity = 125;
 					} else if (this._comList[index] == "Refine"){
 						this.contents.paintOpacity = 255;
+						this.updateHelpText(index,"Refine a weapon")
+					} else if (this._comList[index] == "Synthesize"){
+						if (bSynthRefReq) {
+							if (this._wep._refLevel >= this._wep._synthRefReq){
+								this.contents.paintOpacity = 255;
+								this.updateHelpText(index,"Synthesize a weapon");
+							} else {
+								this.contents.paintOpacity = 125;
+								this.updateHelpText(index,"Your weapon does not meet the requirements.\nRefine it to at least +" + this._wep._synthRefReq + ".");
+							}
+						}
 					}
 				} else {
 					if (this._comList[index] == "Refine"){
 						this.contents.paintOpacity = 125;
+						this.updateHelpText(index,"Your weapon does not meet the requirements.\nYou need to max its level.")
+					}  else if (this._comList[index] == "Synthesize"){
+						if (bSynthRefReq) {							
+							this.contents.paintOpacity = 125;
+							this.updateHelpText(index,"Your weapon does not meet the requirements.\nYou need to max its level.");							
+						}
 					}
 				}	 
 			} else{
 				if (this._comList[index] == "Level Up" || this._comList[index] == "Refine"){
 					this.contents.paintOpacity = 125;
+				}  else if (this._comList[index] == "Synthesize"){
+					if (bSynthRefReq) {
+						if (this._wep._level == this._wep._maxLvl && this._wep._refLevel >= this._wep._synthRefReq){
+							this.contents.paintOpacity = 255;
+							this.updateHelpText(index,"Synthesize a weapon");
+						} else{
+							this.contents.paintOpacity = 125;
+							this.updateHelpText(index,"Your weapon does not meet the requirements.\nRefine it to at least +" + this._wep._synthRefReq + " or max its level.");
+						}
+					}  else {
+						this.contents.paintOpacity = 255;
+					}
 				} else {
 					this.contents.paintOpacity = 255;
 				}
@@ -3207,10 +3517,12 @@ var $instWeapons      = null; //For Geowil_AWP
 					this.contents.paintOpacity = 125;
 				} else if (this._comList[index] == "Refine"){
 					this.contents.paintOpacity = 255;
+					this.updateHelpText(index,"Refine a weapon")
 				}
 			} else {
 				if (this._comList[index] == "Refine"){
 					this.contents.paintOpacity = 125;
+					this.updateHelpText(index,"Your weapon does not meet the requirements.\nYou need to max its level.")
 				}
 			}
 		}
@@ -3218,6 +3530,10 @@ var $instWeapons      = null; //For Geowil_AWP
 		this.drawText(this._comList[index],rect.x,rect.y,rect.width,'left');
 
 		this.contents.paintOpacity = 255;
+	};
+
+	Window_ActionPane.prototype.updateHelpText = function(index, txt){
+		this._helpTxtList[index] = txt;
 	};
 
 	Window_ActionPane.prototype.updateHelp = function(){
@@ -3240,17 +3556,51 @@ var $instWeapons      = null; //For Geowil_AWP
 						} else if (this._comList[this._index] == "Refine"){
 							this._selection = this._comList[this._index];
 							Window_Selectable.prototype.processOk.call(this);
+						} else if (this._comList[this._index] == "Synthesize"){
+							if (bSynthRefReq){
+								if (this._wep._refLevel >= this._wep._synthRefReq){
+									this._selection = this._comList[this._index];
+									Window_Selectable.prototype.processOk.call(this);
+								} else{
+									SoundManager.playCancel();
+									return;
+								}
+							} else{
+								this._selection = this._comList[this._index];
+								Window_Selectable.prototype.processOk.call(this);
+							}
 						}
 					} else {
 						if (this._comList[this._index] == "Refine"){
 							SoundManager.playCancel();
 							return;
+						} else if (this._comList[this._index] == "Synthesize"){
+							if (bSynthRefReq){
+								SoundManager.playCancel();
+								return;
+							} else{
+								this._selection = this._comList[this._index];
+								Window_Selectable.prototype.processOk.call(this);
+							}
 						}
 					}	 
 				} else{
 					if (this._comList[this._index] == "Level Up" || this._comList[this._index] == "Refine"){
 						SoundManager.playCancel();
 						return;
+					} else if (this._comList[this._index] == "Synthesize"){
+						if (bSynthRefReq){
+							if (this._wep._level == this._wep._maxLvl && this._wep._refLevel >= this._wep._synthRefReq){
+								this._selection = this._comList[this._index];
+								Window_Selectable.prototype.processOk.call(this);
+							} else{
+								SoundManager.playCancel();
+								return;
+							}
+						} else {
+							this._selection = this._comList[this._index];
+							Window_Selectable.prototype.processOk.call(this);
+						}
 					} else {
 						this._selection = this._comList[this._index];
 						Window_Selectable.prototype.processOk.call(this);
@@ -3280,6 +3630,19 @@ var $instWeapons      = null; //For Geowil_AWP
 		}
 	}
 
+	Window_ActionPane.prototype.select = function(index){
+		this._index = index;
+	    this._stayCount = 0;
+	    this.ensureCursorVisible();
+	    this.updateCursor();
+	    this.callUpdateHelp();
+		if (index != -1){
+			if (this._comList[index] == "Level Up") { this._statusWindow.expandedInfo(true,false,false); }
+			else if (this._comList[index] == "Refine") { this._statusWindow.expandedInfo(false,true,false); }
+			else if (this._comList[index] == "Synthesize") { this._statusWindow.expandedInfo(false,false,true); }
+			else { this._statusWindow.expandedInfo(false,false,false); }
+		}
+	};
 
 	Window_LevelUp.prototype = Object.create(Window_Selectable.prototype);
 	Window_LevelUp.prototype.constructor = Window_LevelUp;
@@ -3506,7 +3869,7 @@ var $instWeapons      = null; //For Geowil_AWP
 
 							for (var tId in traits){					
 								if (traits[tId].code == newTraits[nTId].code && traits[tId].dataId == newTraits[nTId].dataId){
-									this._wep._traits[tId].value += newTraits[nTId].value;							
+									this._wep._traits[tId].value += newTraits[nTId].value;
 
 									bTraitExists = true;
 								}
@@ -3749,15 +4112,17 @@ var $instWeapons      = null; //For Geowil_AWP
 				for (var pId in this._wep._exParams){
 					if (this._wep._exParams[pId] != 0){
 						if (this._wep._refLevel != 0) { this._wep._exParams[pId] += Math.round(this._wep._exParams[pId]*(this._wep._refBonus*this._wep._refLevel)); }
-						else { this._wep._exParams[pId] += Math.round(this._wep._exParams[pId]*this._wep._refBonus); }
+						else {this._wep._exParams[pId] += Math.round(this._wep._exParams[pId]*this._wep._refBonus); }
 					}
 				}
 
 				//For SP Parms
 				for (var pId in this._wep._spParams){
 					if (this._wep._spParams[pId] != 0){
-						if (this._wep._refLevel != 0) { this._wep._spParams[pId] += Math.round(this._wep._spParams[pId]*(this._wep._refBonus*this._wep._refLevel)); }
-						else { this._wep._spParams[pId] += Math.round(this._wep._spParams[pId]*this._wep._refBonus); }
+						if (this._wep._refLevel != 0) { this._wep._spParams[pId] += this._wep._spParams[pId]*(this._wep._refBonus*this._wep._refLevel); }
+						else{
+							this._wep._spParams[pId] += this._wep._spParams[pId]*this._wep._refBonus;
+						}
 					}
 				}
 
@@ -3766,8 +4131,12 @@ var $instWeapons      = null; //For Geowil_AWP
 					if (this._wep._traits[tId].code == 13){					
 						this._wep._traits[tId].value += this._wep._traits[tId].value*this._wep._refBonus;	
 
-						if (this._wep._refLevel != 0) { this._wep._traits[tId].value += this._wep._traits[tId].value*(this._wep._refBonus*this._wep._refLevel); }
-						else { this._wep._traits[tId].value += this._wep._traits[tId].value*this._wep._refBonus; }						
+						if (this._wep._refLevel == 0) { this._wep._traits[tId].value += this._wep._traits[tId].value * this._wep._refBonus; }
+						else {
+							if (this._wep._traits[tId].value + (this._wep._traits[tId].value*(this._wep._refBonus*this._wep._refLevel)) < 1.0) {
+								this._wep._traits[tId].value += this._wep._traits[tId].value*(this._wep._refBonus*this._wep._refLevel);
+							} else { this._wep._traits[tId].value = 1; }
+						}						
 					}
 				}					
 
@@ -3779,7 +4148,6 @@ var $instWeapons      = null; //For Geowil_AWP
 				this._wep.processFinalParams();
 
 				//Reset weapon values
-				this._wep.changeExp(-1*this._wep._exp);
 				this._wep._level = 1;
 				this._wep._refLevel++;			
 
@@ -4038,7 +4406,7 @@ var $instWeapons      = null; //For Geowil_AWP
 				for (var dPId in donorSParams){
 					for (var bPId in baseSParams)
 					if (donorSParams[dPId] != 0 && baseSParams[bPId] != 0 && bPId == dPId){
-						this._baseWep._spParams[bPId] += Math.round(donorSParams[dPId]*0.15);
+						this._baseWep._spParams[bPId] += donorSParams[dPId]*0.15;					
 
 						bParamExists = true;
 					}
@@ -4062,7 +4430,9 @@ var $instWeapons      = null; //For Geowil_AWP
 
 						for (var bTId in bTraits){					
 							if (bTraits[bTId].code == dTraits[dTId].code && bTraits[bTId].dataId == dTraits[dTId].dataId){
-								this._baseWep._traits[bTId].value += dTraits[dTId].value * 0.15;							
+								if (this._baseWep._traits[bTId].value + (dTraits[dTId].value * 0.15) < 1.0){
+									this._baseWep._traits[bTId].value += dTraits[dTId].value * 0.15;
+								} else { this._baseWep.traits[bTId].value = 1; }
 
 								bTraitExists = true;
 							}
