@@ -1,16 +1,16 @@
 # Geowil_AWP Plugin
-Version: 1.0.1
+Version: 1.3.5
 
-Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_V1.0.1_Demo.zip)
+Demo Available: Yes, [Geowil_AWP_Demo.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_V1.3.5_Demo.zip)
 
-Project Available: Yes, [Geowil_AWP_Project.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_Demo_ProjectV1.0.1.zip)
+Project Available: Yes, [Geowil_AWP_Project.zip](http://lmpgames.com/RMMV/Plugins/Geowil_AWP_V1.3.5_Project.zip)
 
 Conflicts: Maybe, see [Conflicts](https://github.com/Geowil/Geowil_AWP#conflicts) section
 
 Terms of Use: Free non-commercially or commercially; just give credit
 
 <p align="center"> 
-    <img src="http://i15.photobucket.com/albums/a367/Geowil/awpDemo1_zpswmpljojh.png"/>
+    <img src="https://beta-static.photobucket.com/images/a367/Geowil/s0/8c250615-02a5-42be-9bb6-ac82a4c777b9-original.png"/>
 </p>
 
 
@@ -31,7 +31,7 @@ This plugin works by creating an instance of the weapons in the database.  It th
 
 
 ## Current Features Overview
-### Features in V1.0
+### Features in V1.3.5
 
 - Weapon Levels
     -This plugin creates instance based weaponry.  What does this even mean?  might come to your mind.  So, each weapon, when loaded from the database, is turned into a Game_InstanceWeapon upon either loading of a new game while the actors are being equipped or when new items are being added to the game party weapons list through event commands like a shop or the Change Party Weapons event.
@@ -48,7 +48,7 @@ This plugin works by creating an instance of the weapons in the database.  It th
 - Synthesis System
     - The synthesis system allows you to drastically improve a weapon's power.  It works by taking any weapon of the same quality (read as same weapon and refine levels) and combines them. How params and traits are carried over depends on if those params or traits are new to the base weapon.  If they are, they are added at a rate of 30% of the value of the donor weapon. If they are not, then only 15% of the value is carried over but this still can be many times more than refinement depending on the refine bonus note tag setting.
     
-    Once a weapon has been synthesized its level is set to the maximum level of the weapon and the refine level is increased through a formula.  Each time you synthesize a weapon, it will become much harder to synthesize it again and much more costly.  Currently any weapon can be synthesized at any time give the above constraints but eventually only weapons that have been refined at least once and that are at their maximum level will be allowed to be synthesized.
+    Once a weapon has been synthesized its level is set to the maximum level of the weapon and the refine level is increased through a formula.  Each time you synthesize a weapon, it will become much harder to synthesize it again and much more costly.  An optional feature of this system allows you to turn on restrictions which prevent synthesizing unless the weapon is at its maximum level and the weapon has been refined the mimumum number of times require as set by a note tag attribute.
 
 - Repair and Durability System
     - The repair and durability system is another optional system.  This one adds a durability system into the game what will damage a weapon when used in battle based on a multiplier set in the note tag.  Once a weapon's durability reaches 0, currently, all damage output from that weapon is reduced by 25%.  Eventually an option may be added that can either change the amount of damage to remove or to "break" the weapon ala-Dark Cloud.  Weapons can be repaired at a Blacksmith and currently the only cost is gold though an item cost may be an additional option in the future.
@@ -74,6 +74,13 @@ There are a total of six plugin parameters to customize the plugin with.  I will
 
 - Enable Extended Params
     - When on shows all 28 params in the BS stat window else shows only 12 of the most commonly used params.
+    
+- Enable Synthesize Level/Refine Requirements
+    - When on this restricts synthesizing to weapons that are at their max level and have been refined the mimumum number of times which 
+      is set in a note tag attribute.
+      
+- Show Only Non-0 Stats
+    - When this is on, any weapon parameter which has a value of 0 will be hidden from the blacksmith status window.
     
     
 
@@ -113,6 +120,19 @@ This pugin command allows you to show or hide the extended list of parameters in
 AWP ExtendedParams On/Off 
 ```
 
+####Toggle the Synth System Level/Refine Requirements
+This plugin command allows you to enable or disable the requirements for synthesizing
+
+```
+AWP SynthReqs On/Off
+```
+
+####Toggle Non-0 Parameters
+This plugin allows you to enable or disable the only showing non-zero parameters feature.
+
+```
+AWP OnlyNon0Params On/Off
+```
 
 
 ## Weapon Note Tag
@@ -136,7 +156,7 @@ This is followed by a comma-delimited list of how much that parameter should be 
 Example:
 
 ```
-Param:0:10,0,10,0,25
+Param:0:0,10,10,0,25
 ```
 This example shows a weapon with a max level of 5 which increases the maximum hp of the actor by 10 hp on WLV 1, by 10 again on WLV 3, and then by an additional 25 on WLV 5.  Any actor with this weapon equipped while it is at Weapon Level 5 will get an additional 45 health.
      
@@ -144,19 +164,19 @@ EParam:#:#-n - this attribute is used to set extended parameter level bonuses.  
 
 Example:
 ```
-EParam:0:10,0,10,0,25
+EParam:0:0,0.001,0.001,0,0.025
 ```
 
-This example shows a weapon with a max level of 5 which increases the hit rate of the actor by 10 hp on WLV 1, by 10 again on WLV 3, and then by an additional 25 on WLV 5.  Any actor with this weapon equipped while it is at Weapon Level 5 will get an additional 45 hit rate.
+This example shows a weapon with a max level of 5 which increases the hit rate of the actor by 0.1% on WLV 1, by 0.1% again on WLV 3, and then by an additional 2.5% on WLV 5.  Any actor with this weapon equipped while it is at Weapon Level 5 will get an additional 2.7% hit rate.
 
 SParam:#:#-n - this attribute is used to set special parameter level bonuses.  Ensure that you have values for every level for your weapon or crashes may occur. '#' is the parameter number (you can find a list of these numbers defined under Game_BattlerBase). This is followed by a comma-delimited list of how much that parameter should be increased per level where the position of that value in the list is the level the increase occurs on.
 
 Example:
 ```
-SParam:0:10,0,10,0,25
+SParam:0:0,0.001,0,0.001,0,0.025
 ```
 
-This example shows a weapon with a max level of 5 which increases the target rate of the actor by 10 hp on WLV 1, by 10 again on WLV 3, and then by an additional 25 on WLV 5.  Any actor with this weapon equipped while it is at Weapon Level 5 will get an additional 45 target rate.
+This example shows a weapon with a max level of 5 which increases the target rate of the actor by 0.1% on WLV 1, by 0.1% again on WLV 3, and then by an additional 2.5% on WLV 5.  Any actor with this weapon equipped while it is at Weapon Level 5 will get an additional 2.7%. target rate.
 
 LvlTraitCodes:#-n - This attribute is one of three which are required for adding traits to weapons at a particular level.  This one defines what kind of trait you are adding.  I will be compiling a complete list of the trait codes for use with this plugin to help in  setting up these level bonuses.  To define more than one trait at a level, separate each code with a -.
 
@@ -192,6 +212,10 @@ DurInc:5,2,7,6,14
 
 RefBonusRate:# - This attribute sets a value which is used throughout the refine system.  It is used for increasing the value of params and traits during refines, is used in determining refine costs, and other areas when the refine system is enabled, which means it is required if this system is enabled.
 
+ExpMulti:# - This attribute determines how much exp is gained by your weapons.  # represents a decimal number which, in the plugin, is a percentage of the total exp gain by a character in battle.  Setting this over 1.0 will mean your weapon gets more exp than your characters will from a battle.
+
+SynthRefReq:# - This attribute is used to set the mimumum refine level required to synthesize the weapon.  # represents an integer.
+
 Below is an example tag using the examples from above so that you can see the full structure:
 ```
 <AWP>
@@ -200,27 +224,27 @@ DefDur:10
 DurDmg:0.02
 ExpForm:175 * Math.pow(wepLevel+1, 1.25)
 GoldForm:(((175+(1.25*(2*(wepLevel+1+65))))*Math.pow(wepLevel+1,1.25)))
-Param:0:10,0,10,0,25
-Param:2:5,2,2,1,10
-Param:7:1,2,1,0,5
+Param:0:0,10,10,0,25
+Param:2:0,2,2,1,10
+Param:7:0,2,1,0,5
 EParam:0:10,0,10,0,25
-EParam:6:2,6,4,1,4
-SParam:7:10,0,0,15,20
+EParam:6:0,0.006,0.004,0.001,0.04
+SParam:7:0,0.010,0,0.015,0.02
 LvlTraitCodes:0,13,0,13,13-13-13
 LvlTraitIds:0,4,0,5,5-7-10
 LvlTraitVals:0,0.04,0,0.25,0.10-0.15-0.43
-DurInc:5,2,7,6,14
+DurInc:0,2,7,6,14
 RefBonusRate:0.15
+ExpMulti:0.73
+SynthRefReq:2
 </AWP>
 ```
 
 ## Planned Features
 - Ability to "break" weapons that reach 0 durability
-- Ability to limit exp gain on weapons
 - Custom name entry for synthesized weapons
 - Support for dual wield weapons
 - Trait Code Breakdown excel document
-- Ability to limit synthesizing only to weapons at max level with at least 1 refine level
 
 
 
@@ -254,9 +278,13 @@ Anything that aliases or overrides any of the following functions will likely co
  - Game_Actor.prototype.calcEquipItemPerformance
  - Game_Action.prototype.apply
  - Scene_Load.prototype.onLoadSuccess
+ - Scene_Shop.prototype.sellingPrice
  - Window_Base.prototype.drawItemName
  - Window_EquipItem.prototype.includes
  - Window_EquipItem.prototype.updateHelp
+ - Window_ShopStatus.prototype.currentEquippedItem
+ - Window_ShopSell.prototype.isEnabled
+ - Window_ShopSell.prototype.drawActorParamChange
  - Game_Party.prototype.hasItem
  - Game_Party.prototype.numItems
  - Game_Party.prototype.initAllItems
@@ -266,6 +294,61 @@ Anything that aliases or overrides any of the following functions will likely co
  
  
 ## Version Changelog
+- Version 1.3.5 Changelog:
+  - Fixed several bugs related to a negative select index.
+  
+  - Fixed the -- stat sign bug by removing the code that was causing it.  It was not needed.
+  
+  - Fixed a bug that would sometimes cause five stats to be drawn on one line in the blacksmith status window.
+  
+  - Fixed a bug that was causing SP/EX params to be improperly processed into integers instead of floats.  This will invalidate old save games.
+  
+  - Fixed a bug that was causing weapons to be saved incorrectly if you have previously saved the game during the same session and either had removed weapons from your inventory or had unequipped actor's weapons and then saved again.
+  
+  - Fixed a bug that was causing param level bonuses to load incorrectly.  Old save files will still have this issue as it is likely that if you saved multiple times that these bonuses were stripped out of the save file.
+  
+  - Fixed a bug where SP/EX params were not being applied correctly to weapons.
+  
+  - Fixed a bug that was causing SP/EX parameters to show many decimal places.
+  
+  - Fixed several bugs that were allowing traits to exceed 100%.
+  
+  - Fixed a bug where the parameter sign would sometimes show incorrectly when a base weapon had the same parameter as a donor weapon during synthesis.
+  
+  - Fixed a bug that would crash the game when trying to buy a weapon while having one equipped.
+  
+  - Fixed a bug that would crash the game when trying to sell a weapon.
+  
+  - Fixed a bug which caused the price to show incorrectly when selling a weapon.
+  
+  - Fixed a bug which invalidated the gold amount when selling a weapon.
+  
+  - Fixed a bug which was preventing weapons from being sold.
+  
+  - Added missing note tag info to the "Windbag" npc.
+  
+  - Added plugin parameters to show only non-0 weapon parameters and to enable restrctions on synthesizing as well as plugin commands to toggle these from in-game.
+  
+  - Added two new note tag attributes: ExpMulti and SynthRecReq.
+  
+  - Added a new feature which alters the blacksmith status window depending on which action panel command item you have selected to give more pertinent information about that command item.
+  
+  - Added a new feature which alters the help text for action window commands when the current weapon fails to meet a condition for using that command.
+  
+  - Changed how SP/EX params are displayed in the blacksmith status window.  They now correctly show as percentages.
+  
+  - Added a new area with challenging enemies.
+  
+  - Added some new weapons, stronger armor, and stronger healing items.
+  
+  - Added a shop npc to the npc area.
+  
+  - Added some hidden items to the new area.
+  
+  - Added the new plugin information to the "Windbag' npc.
+  
+
+
 - Version 1.0.1 Changelog:
   - Fixed an issue which was causing the "Level Weapon" help text to not display and then updated all of the help text in the Blacksmith action window.
 
