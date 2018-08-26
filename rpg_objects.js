@@ -24,6 +24,8 @@ Game_InstanceWeaponHandler.prototype.initMembers = function(){
 
 Game_InstanceWeaponHandler.prototype.createSaveContents = function(){
     var wpID = 0;
+    if (Object.keys(this._partyWeapons).length > 0) { this._partyWeapons = {}; }
+    if (Object.keys(this._actorWeapons).length > 0) { this._actorWeapons = {}; }
 
     for (var aID in $gameActors._data){
         if (aID != 0){
@@ -66,6 +68,8 @@ Game_InstanceWeaponHandler.prototype.createSaveContents = function(){
                 this._actorWeapons[wpID]["refBonus"] = actor._equips[0]._refBonus;
                 this._actorWeapons[wpID]["isSynthed"] = actor._equips[0]._isSynthed;
                 this._actorWeapons[wpID]["durDmg"] = actor._equips[0]._durDmg;
+                this._actorWeapons[wpID]["wepExpMulti"] = actor._equips[0]._wepExpMulti;
+                this._actorWeapons[wpID]["synthRefReq"] = actor._equips[0]._synthRefReq;
                 this._actorWeapons[wpID]["actID"] = actor._actorId;
                 wpID += 1;
             }
@@ -112,6 +116,8 @@ Game_InstanceWeaponHandler.prototype.createSaveContents = function(){
         this._partyWeapons[pWID]["refBonus"] = gPWeapon._refBonus;
         this._partyWeapons[pWID]["isSynthed"] = gPWeapon._isSynthed;
         this._partyWeapons[pWID]["durDmg"] = gPWeapon._durDmg;
+        this._partyWeapons[pWID]["wepExpMulti"] = gPWeapon._wepExpMulti;
+        this._partyWeapons[pWID]["synthRefReq"] = gPWeapon._synthRefReq;
     }
 }
 
@@ -287,6 +293,8 @@ Game_InstanceWeaponHandler.prototype.processLoadContents = function(){
         actWeapon._refBonus = actorWeaps[actWep]["refBonus"];
         actWeapon._isSynthed = actorWeaps[actWep]["isSynthed"];
         actWeapon._durDmg = actorWeaps[actWep]["durDmg"];
+        actWeapon._wepExpMulti = actorWeaps[actWep]["wepExpMulti"];
+        actWeapon._synthRefReq = actorWeaps[actWep]["synthRefReq"];
 
         actor._equips[sId] = actWeapon;
     }
@@ -330,6 +338,8 @@ Game_InstanceWeaponHandler.prototype.processLoadContents = function(){
         prtyWeapon._refBonus = partyWeaps[pWep]["refBonus"];
         prtyWeapon._isSynthed = partyWeaps[pWep]["isSynthed"];
         prtyWeapon._durDmg = partyWeaps[pWep]["durDmg"];
+        prtyWeapon._wepExpMulti = partyWeaps[pWep]["wepExpMulti"];
+        prtyWeapon._synthRefReq = partyWeaps[pWep]["synthRefReq"];
 
         $gameParty._weapons.push(prtyWeapon);
     }
@@ -380,31 +390,37 @@ Game_InstanceWeaponHandler.prototype.decodeLvBonuses = function(bonuses){
 
             else if (bonus == "eparams"){
                 Object.keys(bonuses[bonus]).forEach(function(paramID){
-                    eParms[paramID] = {};
+                    var params = []
 
                     Object.keys(bonuses[bonus][paramID]).forEach(function(lvl){
-                        eParms[paramID][lvl] = bonuses[bonus][paramID][lvl];
+                        params.push(bonuses[bonus][paramID][lvl]);
                     });
+
+                    eParms[paramID] = params;
                 });
             }
 
-            else if (bonus == "params"){
+            else if (bonus == "params"){                
                 Object.keys(bonuses[bonus]).forEach(function(paramID){
-                    parms[paramID] = {};
-
+                    var params = []
+                    
                     Object.keys(bonuses[bonus][paramID]).forEach(function(lvl){
-                        parms[paramID][lvl] = bonuses[bonus][paramID][lvl];
+                        params.push(bonuses[bonus][paramID][lvl]);
                     });
-                });
+
+                    parms[paramID] = params;
+                });               
             }
 
             else if (bonus == "sparams"){
                 Object.keys(bonuses[bonus]).forEach(function(paramID){
-                    sParms[paramID] = {};
+                    var params = [];
 
                     Object.keys(bonuses[bonus][paramID]).forEach(function(lvl){
-                        sParms[paramID][lvl] = bonuses[bonus][paramID][lvl];
+                        params.push(bonuses[bonus][paramID][lvl]);
                     });
+
+                    sParms[paramID] = params;
                 });
             }
 
@@ -536,6 +552,8 @@ Game_InstanceWeapon.prototype.initialize = function(weap, weapType, slotID, bIsW
         this._refLevel = weap["refLvl"];
         this._isSynthed = weap["isSynthed"];
         this._durDmg = weap["durDmg"];
+        this._wepExpMulti = weap["wepExpMulti"];
+        this._synthRefReq = weap["synthRefReq"];
         this._actId = weap["actID"];
     }
 };
@@ -545,8 +563,8 @@ Game_InstanceWeapon.prototype.initMembers = function(){
     this._baseParams = [0,0,0,0,0,0,0,0];
     this._addParams = [0,0,0,0,0,0,0,0];
     this._finalParams = [0,0,0,0,0,0,0,0];
-    this._spParams = [0,0,0,0,0,0,0,0,0,0];
-    this._exParams = [0,0,0,0,0,0,0,0,0,0];
+    this._spParams = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
+    this._exParams = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
     this._name = "";
     this._description = "";
     this._id = 0;
@@ -573,6 +591,8 @@ Game_InstanceWeapon.prototype.initMembers = function(){
     this._refBonus = 0.0;
     this._isSynthed = false;
     this._durDmg = 0.0;
+    this._wepExpMulti = 0.0;
+    this._synthRefReq = 0;
 };
 
 Game_InstanceWeapon.prototype.finalParams = function(pID){
@@ -589,8 +609,8 @@ Game_InstanceWeapon.prototype.spParams = function(pID){
 
 Game_InstanceWeapon.prototype.processParamTraits = function(){
     var params = [0,0,0,0,0,0,0,0];
-    var spParams = [0,0,0,0,0,0,0,0,0,0];
-    var exParams = [0,0,0,0,0,0,0,0,0,0];
+    var spParams = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
+    var exParams = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 
     var traits = this._traits;
 
@@ -807,6 +827,7 @@ Game_InstanceWeapon.prototype.processNoteTag = function(){
                 if (bInNoteTag){
                     switch (str){
                         case tagStart:
+                        case tagEnd:
                             break;
 
                         default:
@@ -834,7 +855,7 @@ Game_InstanceWeapon.prototype.processNoteTag = function(){
                                 var params = wepData[2].split(',');
 
                                 for (var i1 = 0; i1 < params.length; i1++){
-                                    params[i1] = parseInt(params[i1]);
+                                    params[i1] = parseFloat(params[i1]);
                                 }
 
                                 this._lvlBonuses["eparams"][paramID] = params;
@@ -843,7 +864,7 @@ Game_InstanceWeapon.prototype.processNoteTag = function(){
                                 var params = wepData[2].split(',');
 
                                 for (var i1 = 0; i1 < params.length; i1++){
-                                    params[i1] = parseInt(params[i1]);
+                                    params[i1] = parseFloat(params[i1]);
                                 }
 
                                 this._lvlBonuses["sparams"][paramID] = params;
@@ -858,8 +879,8 @@ Game_InstanceWeapon.prototype.processNoteTag = function(){
                                 }
 
                                 this._lvlBonuses["dur"] = durInc;
-                            }
-
+                            } else if (wepData[0] == "ExpMulti") { this._wepExpMulti = parseFloat(wepData[1]); }
+                            else if (wepData[0] == "SnythRefReq") { this._synthRefReq = parseInt(wepData[1]); }
                             break;
                     }
                 }
